@@ -1,0 +1,27 @@
+function Roptimal = RP(p)
+UA=xlsread('statistics.xlsx','C2:C130');
+UB=xlsread('statistics.xlsx','F2:F130');
+TAU=xlsread('statistics.xlsx','G2:G130');
+Rdata=xlsread('statistics.xlsx','H2:H130');
+R=[0:0.0001:1]';
+BC=5.08.*(0.49-1.18.*(R-0.42)).*(0.12-0.26.*(R-0.42));
+WEDGE=0.4-0.4.*(TAU./UA-0.61);
+epsm=0.4.*(1-UA)./(1./(0.12-0.26.*(Rdata-0.42))-1);
+epsM=epsm.*(1-WEDGE);
+epssp=-epsm.*WEDGE.*(1-UA)./(1-UB);
+[BCX,TAUX]=ndgrid(BC,TAU);
+[RX,UAX]=ndgrid(R,UA);
+[RX,UBX]=ndgrid(R,UB);
+[RX,epsMX]=ndgrid(R,epsM);
+[RX,epsspX]=ndgrid(R,epssp);
+[RX,WEDGEX]=ndgrid(R,WEDGE);
+[RX,PX]=ndgrid(R,p);
+[RX,RdataX]=ndgrid(R,Rdata);
+UAY=UAX+UAX./(1-RdataX).*epsMX.*(RX-RdataX);
+UBY=UBX+UBX./(1-RdataX).*epsspX.*(RX-RdataX);
+TAUY=TAUX-1.5.*TAUX.*(1+TAUX)./(1-UBX)./(1-RdataX).*epsspX.*(RX-RdataX);
+EFAX=0.49-1.29.*(RX-0.42)+RX-1.5.*TAUY./UAY;
+EFBX=(1./PX-1).*(1-UBX)./(1-UAX).*UBY./UAY.*(0.82-1.5.*TAUY./UBY);
+[val,ind]=min(abs(BCX+WEDGEX.*EFAX+WEDGEX.*EFBX-RX));
+Roptimal=R(ind);
+end
